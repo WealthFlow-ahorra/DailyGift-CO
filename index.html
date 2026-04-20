@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, maximum-scale=1.0">
+    <title>🌸 Mi Amor Eterno 🌸</title>
+    <style>
+        /* OPTIMIZADO: GPU acelerado, mínimo reflow, colores suaves */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --rosa: #FF69B4;
+            --rosa-dark: #E75480;
+            --dorado: #FFD700;
+            --morado: #2d1b36;
+            --vino: #1a0a1a;
+            --texto: #FFF0F5;
+        }
+
+        /* IMPORTANTE: body sin scroll, estructura fija */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1a0a1a 0%, #2d1b36 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            position: relative;
+        }
+
+        /* Fondo decorativo ligero */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 40%, rgba(255,105,180,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Contenedor principal: usa toda la altura disponible, sin overflow propio */
+        .game-container {
+            max-width: 1100px;
+            width: 100%;
+            height: 100%;
+            max-height: 100vh;
+            background: rgba(30, 12, 30, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,105,180,0.2);
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Evita scroll en el contenedor principal */
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .title {
+            font-size: clamp(1.2rem, 6vw, 1.8rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #FF69B4, #FFB6C1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.4);
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            margin: 0.6rem 0;
+            gap: 8px;
+            flex-wrap: wrap;
+            border: 1px solid rgba(255,105,180,0.3);
+            flex-shrink: 0;
+        }
+
+        .progress {
+            background: linear-gradient(135deg, #FF69B4, #FF1493);
+            padding: 0.25rem 1rem;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #1a0a1a;
+            font-size: 0.85rem;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.2);
+        }
+
+        .daily {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: #FFE4F0;
+            font-weight: 600;
+        }
+
+        .reset-btn {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #FFB6C1;
+            padding: 0.25rem 0.9rem;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            color: #FFE4F0;
+            cursor: pointer;
+            transition: 0.1s linear;
+        }
+        .reset-btn:active { transform: scale(0.96); background: #FF69B4; color: #1a0a1a; }
+        .reset-btn.hidden { display: none; }
+
+        /* SOLO AQUÍ HAY SCROLL: área de cartas con overflow-y auto */
+        .cards-scroll-area {
+            flex: 1 1 auto;
+            min-height: 0; /* crucial para que flex respete el overflow */
+            overflow-y: auto;
+            overflow-x: hidden;
+            margin: 0.5rem 0;
+            padding: 0 4px;
+            scroll-behavior: smooth;
+        }
+
+        /* Scroll elegante y ligero */
+        .cards-scroll-area::-webkit-scrollbar {
+            width: 5px;
+        }
+        .cards-scroll-area::-webkit-scrollbar-track {
+            background: rgba(255,105,180,0.2);
+            border-radius: 10px;
+        }
+        .cards-scroll-area::-webkit-scrollbar-thumb {
+            background: #FF69B4;
+            border-radius: 10px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.7rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .card-container {
+            aspect-ratio: 3 / 4;
+            perspective: 800px;
+            cursor: pointer;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
+            border-radius: 1rem;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+            will-change: transform;
+        }
+
+        .card.flipping {
+            animation: flipGlide 0.9s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+        }
+
+        @keyframes flipGlide {
+            0% { transform: rotateY(0deg); box-shadow: 0 0 0 2px rgba(255,215,0,0.5); }
+            50% { transform: rotateY(90deg); box-shadow: 0 0 15px 4px rgba(255,215,0,0.8); }
+            100% { transform: rotateY(180deg); box-shadow: 0 6px 14px rgba(0,0,0,0.3); }
+        }
+
+        .card.flipped-permanent {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .card-back {
+            background: linear-gradient(145deg, #2d1b36, #1a0a1a);
+            border: 2px solid #FF69B4;
+            box-shadow: inset 0 0 15px rgba(255,20,147,0.2);
+        }
+
+        .card-back-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 6px #FF69B4);
+            animation: gentlePulse 2s infinite;
+        }
+
+        @keyframes gentlePulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .card-front {
+            background: linear-gradient(145deg, #FFF0F8, #FFE0F0);
+            transform: rotateY(180deg);
+            border: 1px solid #FFD700;
+        }
+
+        .card-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0.9rem;
+        }
+
+        .card-text {
+            font-size: clamp(0.65rem, 3vw, 0.85rem);
+            font-weight: 800;
+            text-align: center;
+            color: #4a0a2a;
+            background: rgba(255,240,248,0.95);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            word-break: break-word;
+            line-height: 1.3;
+            border-radius: 0.9rem;
+        }
+
+        /* Footer fijo abajo, sin scroll */
+        .footer-area {
+            flex-shrink: 0;
+            margin-top: 0.5rem;
+        }
+
+        .msg-area {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem;
+            padding: 0.7rem;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #FFE4F0;
+            border: 1px solid rgba(255,105,180,0.4);
+        }
+
+        footer {
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 0.5rem;
+            opacity: 0.7;
+            color: #FFE4F0;
+        }
+
+        /* Modal optimizado */
+        .modal-full {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-card {
+            background: linear-gradient(145deg, #2d1b36, #1a0a1a);
+            max-width: 85vw;
+            width: auto;
+            max-height: 80vh;
+            border-radius: 2rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid #FFD700;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+            animation: modalPop 0.2s ease-out;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-img {
+            max-width: 100%;
+            max-height: 55vh;
+            object-fit: contain;
+            border-radius: 1rem;
+        }
+
+        .modal-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FFF0F5;
+            padding: 1rem;
+            text-align: center;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            margin-top: 0.8rem;
+            background: linear-gradient(135deg, #FF69B4, #FFD700);
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 3rem;
+            font-weight: bold;
+            color: #1a0a1a;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .close-modal:active { transform: scale(0.96); }
+
+        /* Responsive: ajustes de grid y scroll */
+        @media (max-width: 650px) {
+            body { padding: 6px; }
+            .game-container { padding: 0.8rem; border-radius: 1.5rem; }
+            .cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0.5rem;
+            }
+            .card-container { aspect-ratio: 3/4.2; }
+            .title { font-size: 1.3rem; }
+            .stats { padding: 0.3rem 0.8rem; }
+            .progress { font-size: 0.75rem; padding: 0.2rem 0.8rem; }
+        }
+
+        @media (min-width: 1024px) {
+            .cards-grid { grid-template-columns: repeat(5, 1fr); gap: 1rem; }
+            .card-text { font-size: 0.9rem; }
+        }
+
+        @media (max-width: 850px) and (orientation: landscape) {
+            .cards-scroll-area { flex: 1 1 auto; }
+            .cards-grid { grid-template-columns: repeat(5, 1fr); gap: 0.5rem; }
+        }
+
+        /* Optimización rendimiento */
+        .card, .card-front, .card-back {
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="header">
+        <div class="title">🌸 Para la niña mas consentida del mundo 🌸</div>
+    </div>
+    <div class="stats">
+        <div class="progress">🎀 <span id="progressCount">0</span> / <span id="totalCardsSpan">20</span></div>
+        <div class="daily">💖 <span id="dailyMsg">✨ 1 carta disponible ✨</span></div>
+        <button id="resetGameBtn" class="reset-btn hidden">🔄 Reiniciar</button>
+    </div>
+
+    <!-- ÚNICA ÁREA CON SCROLL: las cartas -->
+    <div class="cards-scroll-area" id="scrollArea">
+        <div class="cards-grid" id="cardsGrid"></div>
+    </div>
+
+    <div class="footer-area">
+        <div class="msg-area" id="globalMsg">💗 Toca una carta para descubrir su secreto</div>
+        <footer>💌 Con todo mi amor, <span id="nombreNovioFooter">Yeffer Hurtado</span> 💌</footer>
+    </div>
+</div>
+
+<div id="fullModal" class="modal-full">
+    <div class="modal-card">
+        <div id="modalContent"></div>
+        <button class="close-modal" id="closeModalBtn">Cerrar</button>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ---------- CONFIGURACIÓN LIGERA ----------
+        const CONFIG = {
+            NOVIA: "Hellen",
+            NOVIO: "Yeffer Hurtado",
+            TOTAL_CARTAS: 20,
+            NUM_ROMANTICAS: 8,
+            NUM_PICANTES: 4,
+            NUM_FOTOS: 8
+        };
+
+        // Base de datos de cartas
+        const ROMANTICAS = [
+            { type:"text", value:`${CONFIG.NOVIA}, te amo con todo mi corazón 💕` },
+            { type:"text", value:"Vale por un masaje relajante de 30 min 💆‍♀️" },
+            { type:"text", value:`Eres mi persona favorita en el mundo 🌍` },
+            { type:"text", value:"¿Sabes cuánto te amo? ¡Infinito! 💖" },
+            { type:"text", value:"Pídeme la foto que quieras, solo por hoy 📸" },
+            { type:"text", value:"Iluminas mis días solo con tu sonrisa ☀️" },
+            { type:"text", value:"Hoy eliges tú la película 🎬" },
+            { type:"text", value:"Vale por un desayuno sorpresa 🥐" },
+            { type:"text", value:"Gracias por existir, mi vida es mejor contigo 🌸" }
+        ];
+        const PICANTES = [
+            { type:"text", value:"🔥 Quiero una foto hot ahora mismo 🔥" },
+            { type:"text", value:"💪 20 sentadillas en video para mí" },
+            { type:"text", value:"👑 Hoy mandas tú en la intimidad" },
+            { type:"text", value:"💃 Te debo un baile privado" },
+            { type:"text", value:"🏩 Próxima cita especial, yo invito" },
+            { type:"text", value:"🎤 Audio picante de lo que me harías" }
+        ];
+        const FOTOS = [
+            { type:"image", value:"./img/foto1.jpg" },{ type:"image", value:"./img/foto2.jpg" },
+            { type:"image", value:"./img/foto3.jpg" },{ type:"image", value:"./img/foto4.jpg" },
+            { type:"image", value:"./img/foto5.jpg" },{ type:"image", value:"./img/foto6.jpg" },
+            { type:"image", value:"./img/foto7.jpg" },{ type:"image", value:"./img/foto8.jpg" }
+        ];
+
+        // Sistema de sonido minimalista
+        class SimpleSound {
+            constructor() { this.ctx = null; this.enabled = true; }
+            init() {
+                if(!this.ctx && window.AudioContext) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playFlip() {
+                if(!this.enabled) return;
+                this.init();
+                if(!this.ctx) return;
+                if(this.ctx.state === 'suspended') this.ctx.resume();
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.value = 880;
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+                    osc.start();
+                    osc.stop(now + 0.3);
+                } catch(e) {}
+            }
+            playUnlock() {
+                if(!this.enabled) return;
+                this.init();
+                if(!this.ctx) return;
+                if(this.ctx.state === 'suspended') this.ctx.resume();
+                try {
+                    const now = this.ctx.currentTime;
+                    [523.25, 659.25, 783.99].forEach((freq, i) => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.07, now + i*0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + i*0.1 + 0.35);
+                        osc.start(now + i*0.1);
+                        osc.stop(now + i*0.1 + 0.35);
+                    });
+                } catch(e) {}
+            }
+            playSparkle() {
+                if(!this.enabled) return;
+                this.init();
+                if(!this.ctx) return;
+                if(this.ctx.state === 'suspended') this.ctx.resume();
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.value = 1200;
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+                    osc.start();
+                    osc.stop(now + 0.2);
+                } catch(e) {}
+            }
+        }
+        const sounds = new SimpleSound();
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function buildDeck() {
+            let deck = [];
+            let romanticCopy = [...ROMANTICAS];
+            for(let i=0; i<CONFIG.NUM_ROMANTICAS && romanticCopy.length; i++) {
+                deck.push(romanticCopy.splice(Math.floor(Math.random()*romanticCopy.length),1)[0]);
+            }
+            let spicyCopy = [...PICANTES];
+            for(let i=0; i<CONFIG.NUM_PICANTES && spicyCopy.length; i++) {
+                deck.push(spicyCopy.splice(Math.floor(Math.random()*spicyCopy.length),1)[0]);
+            }
+            let photosCopy = [...FOTOS];
+            for(let i=0; i<CONFIG.NUM_FOTOS && photosCopy.length; i++) {
+                deck.push(photosCopy.splice(Math.floor(Math.random()*photosCopy.length),1)[0]);
+            }
+            while(deck.length < CONFIG.TOTAL_CARTAS) {
+                deck.push({ type:"text", value:`Te amo ${CONFIG.NOVIA} 💖` });
+            }
+            return shuffleArray(deck).slice(0, CONFIG.TOTAL_CARTAS);
+        }
+
+        let currentCards = [];
+        let unlocked = [];
+        let lastDate = null;
+        let cardElements = [];
+        let gameReady = false;
+        let tutorialMode = false;
+        let isAnimating = false;
+        let flipTimeout = null;
+
+        const grid = document.getElementById('cardsGrid');
+        const progressSpan = document.getElementById('progressCount');
+        const dailySpan = document.getElementById('dailyMsg');
+        const globalMsg = document.getElementById('globalMsg');
+        const modal = document.getElementById('fullModal');
+        const modalContent = document.getElementById('modalContent');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const resetBtn = document.getElementById('resetGameBtn');
+        const scrollArea = document.getElementById('scrollArea');
+
+        function getTodayStr() { const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+        function canUnlock() { return lastDate !== getTodayStr() && !allUnlocked(); }
+        function allUnlocked() { return unlocked.every(v=>v===true); }
+
+        function saveGame() {
+            try {
+                localStorage.setItem('love_deck_v8', JSON.stringify(currentCards));
+                localStorage.setItem('love_unlocked_v8', JSON.stringify(unlocked));
+                localStorage.setItem('love_date_v8', lastDate || '');
+                localStorage.setItem('love_version_v8', '8');
+            } catch(e) {}
+        }
+        function loadGame() {
+            const version = localStorage.getItem('love_version_v8');
+            if(version === '8') {
+                const savedDeck = localStorage.getItem('love_deck_v8');
+                const savedUnlocked = localStorage.getItem('love_unlocked_v8');
+                const savedDate = localStorage.getItem('love_date_v8');
+                if(savedDeck && savedUnlocked) {
+                    try {
+                        currentCards = JSON.parse(savedDeck);
+                        unlocked = JSON.parse(savedUnlocked);
+                        lastDate = savedDate || null;
+                        if(currentCards.length !== CONFIG.TOTAL_CARTAS) throw new Error();
+                        if(unlocked.length !== CONFIG.TOTAL_CARTAS) throw new Error();
+                        return;
+                    } catch(e) {}
+                }
+            }
+            currentCards = buildDeck();
+            unlocked = new Array(CONFIG.TOTAL_CARTAS).fill(false);
+            lastDate = null;
+            saveGame();
+        }
+
+        function resetGame() {
+            if(flipTimeout) clearTimeout(flipTimeout);
+            isAnimating = false;
+            currentCards = buildDeck();
+            unlocked = new Array(CONFIG.TOTAL_CARTAS).fill(false);
+            lastDate = null;
+            saveGame();
+            rebuildUI();
+            globalMsg.innerText = "✨ Juego reiniciado ✨";
+            dailySpan.innerText = "✨ 1 carta disponible ✨";
+            progressSpan.innerText = "0";
+            // Scroll al inicio
+            if(scrollArea) scrollArea.scrollTop = 0;
+        }
+
+        function rebuildUI() {
+            grid.innerHTML = '';
+            cardElements = [];
+            for(let i=0; i<CONFIG.TOTAL_CARTAS; i++) {
+                const cardData = currentCards[i];
+                const container = document.createElement('div');
+                container.className = 'card-container';
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                if(unlocked[i]) cardDiv.classList.add('flipped-permanent');
+                
+                const front = document.createElement('div');
+                front.className = 'card-front';
+                const back = document.createElement('div');
+                back.className = 'card-back';
+                
+                if(unlocked[i]) {
+                    if(cardData.type === 'image') {
+                        const img = document.createElement('img');
+                        img.loading = 'lazy';
+                        img.onerror = function() { this.style.display='none'; this.parentElement.innerHTML='<div class="card-text">🌸 Imagen no disponible 🌸</div>'; };
+                        img.src = cardData.value;
+                        front.appendChild(img);
+                    } else {
+                        const txtDiv = document.createElement('div');
+                        txtDiv.className = 'card-text';
+                        txtDiv.innerText = cardData.value;
+                        front.appendChild(txtDiv);
+                    }
+                    const iconSpan = document.createElement('span');
+                    iconSpan.className = 'card-back-icon';
+                    iconSpan.innerText = '💖';
+                    back.appendChild(iconSpan);
+                } else {
+                    const iconFront = document.createElement('span');
+                    iconFront.className = 'card-back-icon';
+                    iconFront.innerText = '💖';
+                    front.appendChild(iconFront);
+                    const iconBack = document.createElement('span');
+                    iconBack.className = 'card-back-icon';
+                    iconBack.innerText = '💖';
+                    back.appendChild(iconBack);
+                }
+                cardDiv.appendChild(front);
+                cardDiv.appendChild(back);
+                container.appendChild(cardDiv);
+                container.addEventListener('click', (idx => () => onCardClick(idx))(i));
+                grid.appendChild(container);
+                cardElements.push(cardDiv);
+            }
+            const unlockedCount = unlocked.filter(v=>v).length;
+            progressSpan.innerText = unlockedCount;
+            if(allUnlocked()) dailySpan.innerText = "🏆 COMPLETADO";
+            else if(lastDate === getTodayStr()) dailySpan.innerText = "⏳ Carta usada hoy";
+            else dailySpan.innerText = "✨ 1 carta disponible ✨";
+        }
+
+        async function onCardClick(index) {
+            if(!gameReady || tutorialMode || isAnimating) return;
+            if(allUnlocked()) {
+                if(unlocked[index]) showModal(index);
+                else globalMsg.innerText = "🌟 ¡Todas las cartas están abiertas! 🌟";
+                return;
+            }
+            if(unlocked[index]) {
+                showModal(index);
+                return;
+            }
+            if(!canUnlock()) {
+                globalMsg.innerText = "⏳ Solo una carta por día. ¡Vuelve mañana! 💫";
+                sounds.playSparkle();
+                return;
+            }
+            
+            isAnimating = true;
+            const cardDiv = cardElements[index];
+            if(!cardDiv) { isAnimating = false; return; }
+            
+            sounds.playFlip();
+            cardDiv.classList.add('flipping');
+            
+            await new Promise(r => { flipTimeout = setTimeout(r, 900); });
+            flipTimeout = null;
+            
+            unlocked[index] = true;
+            lastDate = getTodayStr();
+            saveGame();
+            
+            const cardData = currentCards[index];
+            const frontDiv = cardDiv.querySelector('.card-front');
+            frontDiv.innerHTML = '';
+            if(cardData.type === 'image') {
+                const img = document.createElement('img');
+                img.loading = 'lazy';
+                img.onerror = function() { this.style.display='none'; this.parentElement.innerHTML='<div class="card-text">🌸 Imagen no disponible 🌸</div>'; };
+                img.src = cardData.value;
+                frontDiv.appendChild(img);
+            } else {
+                const txt = document.createElement('div');
+                txt.className = 'card-text';
+                txt.innerText = cardData.value;
+                frontDiv.appendChild(txt);
+            }
+            
+            cardDiv.classList.remove('flipping');
+            cardDiv.classList.add('flipped-permanent');
+            
+            const newCount = unlocked.filter(v=>v).length;
+            progressSpan.innerText = newCount;
+            if(allUnlocked()) dailySpan.innerText = "🏆 COMPLETADO";
+            else dailySpan.innerText = "⏳ Carta usada hoy";
+            globalMsg.innerText = `🎉 ¡Carta desbloqueada! Tócala para verla en grande 🎉`;
+            sounds.playUnlock();
+            isAnimating = false;
+            
+            if(navigator.vibrate) navigator.vibrate(100);
+        }
+
+        function showModal(idx) {
+            const data = currentCards[idx];
+            modalContent.innerHTML = '';
+            if(data.type === 'image') {
+                const img = document.createElement('img');
+                img.className = 'modal-img';
+                img.onerror = function() { this.style.display='none'; this.parentElement.innerHTML='<div class="modal-text">🌸 Imagen no encontrada 🌸</div>'; };
+                img.src = data.value;
+                modalContent.appendChild(img);
+            } else {
+                const txtDiv = document.createElement('div');
+                txtDiv.className = 'modal-text';
+                txtDiv.innerText = data.value;
+                modalContent.appendChild(txtDiv);
+            }
+            modal.style.display = 'flex';
+            sounds.playSparkle();
+        }
+
+        function closeModal() { modal.style.display = 'none'; }
+
+        async function startTutorial() {
+            tutorialMode = true;
+            gameReady = false;
+            const showMsg = (text) => new Promise(resolve => {
+                const overlay = document.createElement('div');
+                overlay.style.position = 'fixed';
+                overlay.style.top = '0'; overlay.style.left = '0';
+                overlay.style.width = '100%'; overlay.style.height = '100%';
+                overlay.style.background = 'rgba(0,0,0,0.85)';
+                overlay.style.backdropFilter = 'blur(10px)';
+                overlay.style.zIndex = '2000';
+                overlay.style.display = 'flex';
+                overlay.style.alignItems = 'center';
+                overlay.style.justifyContent = 'center';
+                const cardDiv = document.createElement('div');
+                cardDiv.style.background = 'linear-gradient(145deg, #2d1b36, #1a0a1a)';
+                cardDiv.style.padding = '2rem';
+                cardDiv.style.borderRadius = '2rem';
+                cardDiv.style.border = '2px solid #FFD700';
+                cardDiv.style.textAlign = 'center';
+                cardDiv.style.maxWidth = '300px';
+                cardDiv.innerHTML = `<p style="color:#FFE4F0; margin-bottom:1rem; font-weight:bold;">🌸 ${text}</p><button style="background:#FF69B4; border:none; padding:0.5rem 1.5rem; border-radius:2rem; font-weight:bold;">Entiendo</button>`;
+                overlay.appendChild(cardDiv);
+                document.body.appendChild(overlay);
+                cardDiv.querySelector('button').onclick = () => { overlay.remove(); resolve(); };
+            });
+            await showMsg(`Hola mi amor 💖 ${CONFIG.NOVIO} preparó este juego para ti`);
+            await showMsg(`🎀 Solo puedes abrir UNA carta por día. ¡Cada giro es especial!`);
+            await showMsg(`✨ Toca cualquier carta para ver la magia ✨`);
+            tutorialMode = false;
+            gameReady = true;
+            resetGame();
+            localStorage.setItem('tutorial_completed_v8', 'true');
+            globalMsg.innerText = "💎 ¡Juego listo! Toca una carta oculta cada día 💎";
+        }
+
+        function init() {
+            loadGame();
+            rebuildUI();
+            const tutorialDone = localStorage.getItem('tutorial_completed_v8');
+            if(!tutorialDone) {
+                startTutorial();
+            } else {
+                gameReady = true;
+                if(allUnlocked()) globalMsg.innerText = "🏆 ¡Felicidades! Descubriste todos los secretos 🏆";
+                else if(lastDate === getTodayStr()) globalMsg.innerText = "🌟 Ya abriste tu carta de hoy. ¡Vuelve mañana! 🌟";
+                else globalMsg.innerText = "💎 Toca una carta para descubrir su secreto 💎";
+            }
+            const resetHidden = localStorage.getItem('reset_perm_hidden_v8');
+            if(resetHidden === 'true') resetBtn.classList.add('hidden');
+            else {
+                resetBtn.classList.remove('hidden');
+                localStorage.setItem('reset_perm_hidden_v8', 'true');
+                resetBtn.onclick = () => { if(confirm('¿Reiniciar todo el progreso?')) resetGame(); };
+            }
+            modal.onclick = (e) => { if(e.target === modal) closeModal(); };
+            closeModalBtn.onclick = closeModal;
+            const enableAudio = () => { sounds.init(); if(sounds.ctx && sounds.ctx.state === 'suspended') sounds.ctx.resume(); };
+            document.body.addEventListener('touchstart', enableAudio, { once: true });
+            document.body.addEventListener('click', enableAudio, { once: true });
+        }
+
+        document.getElementById('totalCardsSpan').innerText = CONFIG.TOTAL_CARTAS;
+        document.getElementById('nombreNovioFooter').innerText = CONFIG.NOVIO;
+        init();
+    })();
+</script>
+</body>
+</html>
