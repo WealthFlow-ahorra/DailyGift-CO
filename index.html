@@ -1,10 +1,39 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+   <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, maximum-scale=1.0">
-    <title>DailyGift-CO
-</title>
+    <title>DailyGift-CO</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DailyGift">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000"> <meta name="description" content="Tu plataforma de regalos diarios en Colombia.">
+    <link rel="canonical" href="https://tudominio.com/">
+    
+    <link rel="manifest" href="/manifest.json">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <style>
+        /* CSS Crítico para evitar el parpadeo blanco y cubrir el notch/isla dinámica */
+        :root {
+            --safe-area-top: env(safe-area-inset-top);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            padding-top: var(--safe-area-top); /* Protege el contenido detrás del notch */
+            background-color: #000000; /* Asegura que no haya bordes blancos */
+            overscroll-behavior-y: contain; /* Evita el efecto de rebote elástico del navegador */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Quita el cuadro gris al tocar botones */
+        }
+    </style>
     <style>
         * {
             margin: 0;
@@ -447,12 +476,11 @@
 </head>
 <body>
 <div class="game-container">
-    <div class="header"><div class="title">DailyGift
- ✨</div></div>
+    <div class="header"><div class="title">DailyGift ✨</div></div>
     <div class="stats">
         <div class="progress">🎀 <span id="progressCount">0</span>/<span id="totalCardsSpan">20</span></div>
         <div class="daily"> <span id="dailyMsg">Solo una carta disponible ✨</span></div>
-        
+        <div class="reset-btn" id="resetGameBtn">⟳ Reiniciar</div>
     </div>
     <div class="cards-scroll-area" id="scrollArea">
         <div class="cards-grid" id="cardsGrid"></div>
@@ -732,7 +760,7 @@
         function init(){
             loadGame(); rebuildUI();
             if(!localStorage.getItem('tutorial_opt')) tutorial(); else gameReady=true;
-            resetBtn.onclick=()=>{ if(confirm('¿Reiniciar todo?')) resetGame(); };
+            resetBtn.onclick = () => { if(confirm('¿Reiniciar todo?')) resetGame(); };
             modal.onclick=e=>{ if(e.target===modal) closeModal(); }; closeModalBtn.onclick=closeModal;
             document.body.addEventListener('touchstart', ()=>sounds.init(), {once:true});
         }
