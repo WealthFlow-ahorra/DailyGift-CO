@@ -1,39 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-   <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, maximum-scale=1.0">
     <title>DailyGift-CO</title>
-
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="DailyGift">
-
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000"> <meta name="description" content="Tu plataforma de regalos diarios en Colombia.">
-    <link rel="canonical" href="https://tudominio.com/">
-    
-    <link rel="manifest" href="/manifest.json">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <style>
-        /* CSS Crítico para evitar el parpadeo blanco y cubrir el notch/isla dinámica */
-        :root {
-            --safe-area-top: env(safe-area-inset-top);
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            padding-top: var(--safe-area-top); /* Protege el contenido detrás del notch */
-            background-color: #000000; /* Asegura que no haya bordes blancos */
-            overscroll-behavior-y: contain; /* Evita el efecto de rebote elástico del navegador */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent; /* Quita el cuadro gris al tocar botones */
-        }
-    </style>
     <style>
         * {
             margin: 0;
@@ -107,7 +77,6 @@
             color: transparent;
             text-shadow: 0 0 20px rgba(255,105,180,0.5);
             animation: titleGlow 2s infinite;
-            will-change: filter;
         }
 
         @keyframes titleGlow {
@@ -158,7 +127,6 @@
             color: #FFE4F0;
             cursor: pointer;
             transition: transform 0.1s, background 0.1s;
-            will-change: transform;
         }
         .reset-btn:active { transform: scale(0.96); background: #FF69B4; color: #1a0a1a; }
 
@@ -185,7 +153,6 @@
             aspect-ratio: 3 / 4;
             perspective: 800px;
             cursor: pointer;
-            will-change: transform;
         }
 
         .card {
@@ -196,7 +163,6 @@
             transform-style: preserve-3d;
             border-radius: 1rem;
             box-shadow: 0 6px 14px rgba(0,0,0,0.3);
-            will-change: transform, box-shadow;
         }
 
         .card.flipping {
@@ -234,7 +200,6 @@
             font-size: 2.5rem;
             filter: drop-shadow(0 0 8px #FF69B4);
             animation: heartbeat 1.2s infinite;
-            will-change: transform;
         }
 
         @keyframes heartbeat {
@@ -296,7 +261,6 @@
             color: #FFE4F0;
         }
 
-        /* Modal optimizado */
         .modal-full {
             display: none;
             position: fixed;
@@ -320,7 +284,6 @@
             border: 3px solid #FFD700;
             box-shadow: 0 20px 40px rgba(0,0,0,0.6);
             animation: modalMagic 0.3s ease-out;
-            will-change: transform, opacity;
         }
 
         @keyframes modalMagic {
@@ -353,11 +316,9 @@
             color: #1a0a1a;
             font-size: 1rem;
             cursor: pointer;
-            transition: transform 0.1s;
         }
         .close-modal:active { transform: scale(0.96); }
 
-        /* Minijuegos overlay (sin lag) */
         .minigame-overlay {
             position: fixed;
             inset: 0;
@@ -407,7 +368,6 @@
             background: linear-gradient(90deg, #FFD700, #FF69B4);
             transition: width 0.05s linear;
             box-shadow: 0 0 15px #FF69B4;
-            will-change: width;
         }
 
         .scratch-canvas-container {
@@ -423,7 +383,6 @@
             aspect-ratio: 1/1;
             background: #2d1b36;
             touch-action: none;
-            will-change: contents;
         }
 
         .timer-text {
@@ -451,7 +410,6 @@
             margin-left: 10px;
         }
 
-        /* Confeti ligero (GPU) */
         .confetti {
             position: fixed;
             width: 8px;
@@ -459,7 +417,6 @@
             background: #FF69B4;
             pointer-events: none;
             z-index: 4000;
-            will-change: transform, opacity;
             animation: confettiFall linear forwards;
         }
         @keyframes confettiFall {
@@ -479,8 +436,8 @@
     <div class="header"><div class="title">DailyGift ✨</div></div>
     <div class="stats">
         <div class="progress">🎀 <span id="progressCount">0</span>/<span id="totalCardsSpan">20</span></div>
-        <div class="daily"> <span id="dailyMsg">Solo una carta disponible ✨</span></div>
-        <div class="reset-btn" id="resetGameBtn">⟳ Reiniciar</div>
+        <div class="daily">✨ <span id="dailyMsg">Solo una carta disponible ✨</span></div>
+        <button class="reset-btn" id="resetGameBtn">🔄 Reiniciar</button>
     </div>
     <div class="cards-scroll-area" id="scrollArea">
         <div class="cards-grid" id="cardsGrid"></div>
@@ -491,7 +448,6 @@
     </div>
 </div>
 
-<!-- Modal -->
 <div id="fullModal" class="modal-full">
     <div class="modal-card">
         <div id="modalContent"></div>
@@ -499,46 +455,54 @@
     </div>
 </div>
 
-<!-- Overlay minijuegos -->
 <div id="minigameOverlay" class="minigame-overlay" style="display: none;"></div>
 
 <script>
     (function(){
         "use strict";
 
-        // CONFIG
         const CONFIG = {
-            NOVIA: "Hellen",
-            NOVIO: "Yeffer Hurtado",
-            TOTAL_CARTAS: 20,
-            NUM_ROMANTICAS: 8, NUM_PICANTES: 4, NUM_FOTOS: 8
+            NOVIA: "Andrea",
+            NOVIO: "Leison Yesid",
+            TOTAL_CARTAS: 10,
+            NUM_ROMANTICAS: 8,
+            NUM_PICANTES: 4,
+            NUM_FOTOS: 8
         };
 
-        // CONTENIDOS
         const ROMANTICAS = [
-            { t:"text", v:`${CONFIG.NOVIA}, eres el amor de mi vida 💕` },{ t:"text", v:"Vale por un masaje relajante de 30 min 💆‍♀️" },
-            { t:"text", v:`Cada día te amo más, eres mi sol 🌞` },{ t:"text", v:"Te amo hasta el infinito y más allá 💖" },
-            { t:"text", v:"Pídeme la foto que quieras, hoy es tu día 📸" },{ t:"text", v:"Tu sonrisa ilumina mi mundo ☀️" },
-            { t:"text", v:"Esta noche elegimos juntos la película 🎬" },{ t:"text", v:"Desayuno sorpresa en la cama 🥐" }
+            { t:"text", v:`${CONFIG.NOVIA}, eres el amor de mi vida 💕` },
+            { t:"text", v:"Vale por un masaje relajante de 30 min 💆‍♀️" },
+            { t:"text", v:`Cada día te amo más, eres mi sol 🌞` },
+            { t:"text", v:"Te amo hasta el infinito y más allá 💖" },
+            { t:"text", v:"Pídeme la foto que quieras, hoy es tu día 📸" },
+            { t:"text", v:"Tu sonrisa ilumina mi mundo ☀️" },
+            { t:"text", v:"Esta noche elegimos juntos la película 🎬" },
+            { t:"text", v:"Desayuno sorpresa en la cama 🥐" }
         ];
         const PICANTES = [
-            { t:"text", v:"🔥 Quiero una foto tuya ahora mismo 🔥" },{ t:"text", v:"💪 20 sentadillas en video para mí" },
-            { t:"text", v:"👑 Hoy tú mandas en todo" },{ t:"text", v:"💃 Te debo un baile privado" },
-            { t:"text", v:"🏩 Próxima cita: tú eliges el lugar" },{ t:"text", v:"🎤 Mándame un audio diciendo algo lindo" }
+            { t:"text", v:"🔥 Quiero una foto tuya ahora mismo 🔥" },
+            { t:"text", v:"💪 20 sentadillas en video para mí" },
+            { t:"text", v:"👑 Hoy tú mandas en todo" },
+            { t:"text", v:"💃 Te debo un baile privado" },
+            { t:"text", v:"🏩 Próxima cita: tú eliges el lugar" },
+            { t:"text", v:"🎤 Mándame un audio diciendo algo lindo" }
         ];
         const FOTOS = [
-            { t:"img", v:"https://picsum.photos/400/600?random=301" },{ t:"img", v:"https://picsum.photos/400/600?random=302" },
-            { t:"img", v:"https://picsum.photos/400/600?random=303" },{ t:"img", v:"https://picsum.photos/400/600?random=304" },
-            { t:"img", v:"https://picsum.photos/400/600?random=305" },{ t:"img", v:"https://picsum.photos/400/600?random=306" },
-            { t:"img", v:"https://picsum.photos/400/600?random=307" },{ t:"img", v:"https://picsum.photos/400/600?random=308" }
+            { t:"img", v:"https://picsum.photos/400/600?random=301" },
+            { t:"img", v:"https://picsum.photos/400/600?random=302" },
+            { t:"img", v:"https://picsum.photos/400/600?random=303" },
+            { t:"img", v:"https://picsum.photos/400/600?random=304" },
+            { t:"img", v:"https://picsum.photos/400/600?random=305" },
+            { t:"img", v:"https://picsum.photos/400/600?random=306" },
+            { t:"img", v:"https://picsum.photos/400/600?random=307" },
+            { t:"img", v:"https://picsum.photos/400/600?random=308" }
         ];
 
-        // Estado
         let currentCards = [], unlocked = [], lastDate = null, specialMechanics = {};
         let gameReady = false, isAnimating = false, activeMinigame = false;
         let cardElements = [];
 
-        // DOM
         const grid = document.getElementById('cardsGrid');
         const progressSpan = document.getElementById('progressCount');
         const dailySpan = document.getElementById('dailyMsg');
@@ -552,31 +516,55 @@
         document.getElementById('totalCardsSpan').innerText = CONFIG.TOTAL_CARTAS;
         document.getElementById('nombreNovioFooter').innerText = CONFIG.NOVIO;
 
-        // Utilidades fecha
         const getTodayStr = () => { const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
         const allUnlocked = () => unlocked.every(v=>v===true);
         const canUnlock = () => lastDate !== getTodayStr() && !allUnlocked();
 
-        // Sonidos (bajo consumo)
-        const sounds = { ctx:null, init(){ if(!this.ctx && window.AudioContext) this.ctx = new AudioContext(); },
-            play(f,d=0.25){ this.init(); if(!this.ctx) return; if(this.ctx.state==='suspended') this.ctx.resume();
-                try{ const n=this.ctx.currentTime; f.forEach((fr,i)=>{ const o=this.ctx.createOscillator(); const g=this.ctx.createGain();
-                    o.connect(g); g.connect(this.ctx.destination); o.type='sine'; o.frequency.value=fr;
-                    g.gain.setValueAtTime(0.06, n+i*0.04); g.gain.exponentialRampToValueAtTime(0.0001, n+i*0.04+d);
-                    o.start(n+i*0.04); o.stop(n+i*0.04+d); }); }catch(e){} } };
+        const sounds = {
+            ctx: null,
+            init(){ if(!this.ctx && window.AudioContext) this.ctx = new AudioContext(); },
+            play(f,d=0.25){
+                this.init();
+                if(!this.ctx) return;
+                if(this.ctx.state==='suspended') this.ctx.resume();
+                try{
+                    const n=this.ctx.currentTime;
+                    f.forEach((fr,i)=>{
+                        const o=this.ctx.createOscillator();
+                        const g=this.ctx.createGain();
+                        o.connect(g);
+                        g.connect(this.ctx.destination);
+                        o.type='sine';
+                        o.frequency.value=fr;
+                        g.gain.setValueAtTime(0.06, n+i*0.04);
+                        g.gain.exponentialRampToValueAtTime(0.0001, n+i*0.04+d);
+                        o.start(n+i*0.04);
+                        o.stop(n+i*0.04+d);
+                    });
+                } catch(e){}
+            }
+        };
 
-        // Confeti ligero (solo 15 partículas)
         function spawnConfetti() {
             for(let i=0; i<15; i++) {
-                const c = document.createElement('div'); c.className='confetti';
-                c.style.left = Math.random()*100+'%'; c.style.background = ['#FF69B4','#FFD700','#FFB6C1'][Math.floor(Math.random()*3)];
-                c.style.animationDuration = (Math.random()*1.2+0.8)+'s'; c.style.animationDelay = Math.random()*0.2+'s';
-                document.body.appendChild(c); setTimeout(()=>c.remove(), 2000);
+                const c = document.createElement('div');
+                c.className='confetti';
+                c.style.left = Math.random()*100+'%';
+                c.style.background = ['#FF69B4','#FFD700','#FFB6C1'][Math.floor(Math.random()*3)];
+                c.style.animationDuration = (Math.random()*1.2+0.8)+'s';
+                c.style.animationDelay = Math.random()*0.2+'s';
+                document.body.appendChild(c);
+                setTimeout(()=>c.remove(), 2000);
             }
         }
 
-        // Barajar
-        function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+        function shuffle(arr){
+            for(let i=arr.length-1;i>0;i--){
+                const j=Math.floor(Math.random()*(i+1));
+                [arr[i],arr[j]]=[arr[j],arr[i]];
+            }
+            return arr;
+        }
 
         function buildDeck(){
             let deck = [];
@@ -585,185 +573,405 @@
             deck.push(...shuffle([...FOTOS]).slice(0, CONFIG.NUM_FOTOS));
             while(deck.length < CONFIG.TOTAL_CARTAS) deck.push({ t:"text", v:`Te amo ${CONFIG.NOVIA} 💖` });
             deck = shuffle(deck).slice(0, CONFIG.TOTAL_CARTAS);
-            const mech = {}; const specials = new Set(); while(specials.size<6) specials.add(Math.floor(Math.random()*CONFIG.TOTAL_CARTAS));
+            const mech = {};
+            const specials = new Set();
+            while(specials.size<6) specials.add(Math.floor(Math.random()*CONFIG.TOTAL_CARTAS));
             ['shake','scratch','shake','scratch','shake','scratch'].forEach((m,i)=> mech[[...specials][i]] = m );
             return { deck, specialMechanics: mech };
         }
 
-        // Persistencia
-        function saveGame(){ localStorage.setItem('loveGame_opt', JSON.stringify({ d:currentCards, u:unlocked, ld:lastDate, s:specialMechanics })); }
-        function loadGame(){
-            const raw = localStorage.getItem('loveGame_opt');
-            if(raw){ try{ const data=JSON.parse(raw); currentCards=data.d; unlocked=data.u; lastDate=data.ld; specialMechanics=data.s||{}; if(currentCards.length===CONFIG.TOTAL_CARTAS) return; }catch(e){} }
-            const built = buildDeck(); currentCards=built.deck; specialMechanics=built.specialMechanics; unlocked=new Array(CONFIG.TOTAL_CARTAS).fill(false); lastDate=null; saveGame();
+        function saveGame(){
+            localStorage.setItem('loveGame_opt', JSON.stringify({ d:currentCards, u:unlocked, ld:lastDate, s:specialMechanics }));
         }
 
-        // UI de cartas (optimizado con fragment)
+        function loadGame(){
+            const raw = localStorage.getItem('loveGame_opt');
+            if(raw){
+                try{
+                    const data=JSON.parse(raw);
+                    currentCards=data.d;
+                    unlocked=data.u;
+                    lastDate=data.ld;
+                    specialMechanics=data.s||{};
+                    if(currentCards.length===CONFIG.TOTAL_CARTAS) return;
+                }catch(e){}
+            }
+            const built = buildDeck();
+            currentCards=built.deck;
+            specialMechanics=built.specialMechanics;
+            unlocked=new Array(CONFIG.TOTAL_CARTAS).fill(false);
+            lastDate=null;
+            saveGame();
+        }
+
         function updateCardFrontElement(idx){
-            const front = cardElements[idx].querySelector('.card-front'); front.innerHTML='';
+            const front = cardElements[idx].querySelector('.card-front');
+            front.innerHTML = '';
             const data = currentCards[idx];
-            if(data.t==='img'){ const img=document.createElement('img'); img.src=data.v; front.appendChild(img); }
-            else{ const d=document.createElement('div'); d.className='card-text'; d.innerText=data.v; front.appendChild(d); }
+            if(data.t === 'img'){
+                const img = document.createElement('img');
+                img.src = data.v;
+                front.appendChild(img);
+            } else {
+                const div = document.createElement('div');
+                div.className = 'card-text';
+                div.innerText = data.v;
+                front.appendChild(div);
+            }
         }
 
         function rebuildUI(){
             const fragment = document.createDocumentFragment();
             cardElements = [];
-            for(let i=0; i<CONFIG.TOTAL_CARTAS; i++){
-                const cont = document.createElement('div'); cont.className='card-container';
-                const card = document.createElement('div'); card.className='card' + (unlocked[i]?' flipped-permanent':'');
-                const front = document.createElement('div'); front.className='card-front';
-                const back = document.createElement('div'); back.className='card-back'; back.innerHTML='<span class="card-back-icon">💖</span>';
-                if(unlocked[i]){ updateCardFrontElement(i); } else { front.innerHTML='<span class="card-back-icon">💖</span>'; }
-                card.appendChild(front); card.appendChild(back); cont.appendChild(card);
-                cont.addEventListener('click', (idx=>()=>onCardClick(idx))(i));
+            for(let i = 0; i < CONFIG.TOTAL_CARTAS; i++){
+                const cont = document.createElement('div');
+                cont.className = 'card-container';
+                const card = document.createElement('div');
+                card.className = 'card' + (unlocked[i] ? ' flipped-permanent' : '');
+                
+                const front = document.createElement('div');
+                front.className = 'card-front';
+                const back = document.createElement('div');
+                back.className = 'card-back';
+                back.innerHTML = '<span class="card-back-icon">💖</span>';
+                
+                // Inicialmente ponemos un icono temporal en el frente
+                front.innerHTML = '<span class="card-back-icon">💖</span>';
+                
+                card.appendChild(front);
+                card.appendChild(back);
+                cont.appendChild(card);
+                cont.addEventListener('click', (idx => () => onCardClick(idx))(i));
                 fragment.appendChild(cont);
+                
+                // Guardar referencia ANTES de actualizar contenido
                 cardElements.push(card);
+                
+                // Si ya está desbloqueada, actualizar el contenido real
+                if(unlocked[i]){
+                    updateCardFrontElement(i);
+                }
             }
-            grid.innerHTML = ''; grid.appendChild(fragment);
+            grid.innerHTML = '';
+            grid.appendChild(fragment);
             updateProgress();
         }
 
         function updateProgress(){
-            const cnt = unlocked.filter(v=>v).length; progressSpan.innerText = cnt;
+            const cnt = unlocked.filter(v=>v).length;
+            progressSpan.innerText = cnt;
             if(allUnlocked()) dailySpan.innerText = "🏆 COMPLETADO";
             else if(lastDate === getTodayStr()) dailySpan.innerText = "⏳ Carta usada hoy";
             else dailySpan.innerText = "✨ 1 carta disponible ✨";
         }
 
-        // Flujo principal
         async function onCardClick(index){
             if(!gameReady || isAnimating || activeMinigame) return;
-            if(unlocked[index]){ showModal(index); return; }
-            if(allUnlocked()){ globalMsg.innerText="🌟 ¡Ya descubriste todas las sorpresas! 🌟"; return; }
-            if(!canUnlock()){ globalMsg.innerText="⏳ Solo una carta por día. ¡Mañana más! 💫"; sounds.play([880]); return; }
+            if(unlocked[index]){
+                showModal(index);
+                return;
+            }
+            if(allUnlocked()){
+                globalMsg.innerText="🌟 ¡Ya descubriste todas las sorpresas! 🌟";
+                return;
+            }
+            if(!canUnlock()){
+                globalMsg.innerText="⏳ Solo una carta por día. ¡Mañana más! 💫";
+                sounds.play([880]);
+                return;
+            }
 
             const mech = specialMechanics[index];
             if(mech === 'shake') await startShakeGame(index);
             else if(mech === 'scratch') await startScratchGame(index);
             else await unlockNormal(index);
+            
             if(unlocked[index]) finalizeUnlock(index);
         }
 
         async function unlockNormal(index){
-            isAnimating=activeMinigame=true;
+            isAnimating = activeMinigame = true;
             const card = cardElements[index];
             sounds.play([880,1046]);
             card.classList.add('flipping');
-            await new Promise(r=>setTimeout(r,1400));
-            unlocked[index]=true; lastDate=getTodayStr(); saveGame();
+            await new Promise(r => setTimeout(r, 1400));
+            unlocked[index] = true;
+            lastDate = getTodayStr();
+            saveGame();
             updateCardFrontElement(index);
-            card.classList.remove('flipping'); card.classList.add('flipped-permanent');
+            card.classList.remove('flipping');
+            card.classList.add('flipped-permanent');
             finalizeUnlock(index);
-            isAnimating=activeMinigame=false;
+            isAnimating = activeMinigame = false;
         }
 
         function finalizeUnlock(index){
-            spawnConfetti(); sounds.play([523,659,783]);
-            updateProgress(); globalMsg.innerHTML='🎉✨ ¡CARTA DESBLOQUEADA! ✨🎉';
+            spawnConfetti();
+            sounds.play([523,659,783]);
+            updateProgress();
+            globalMsg.innerHTML = '🎉✨ ¡CARTA DESBLOQUEADA! ✨🎉';
             if(navigator.vibrate) navigator.vibrate([100,50,100]);
         }
 
-        // SHAKE optimizado (throttle con RAF)
         function startShakeGame(index){
-            return new Promise(resolve=>{
-                activeMinigame=isAnimating=true;
-                let power=0; const TH=100; let last={x:0,y:0,z:0}; let raf=null, lastUpdate=0;
-                minigameOverlay.style.display='flex';
-                minigameOverlay.innerHTML=`<div class="minigame-card"><div class="minigame-title">⚡ ¡AGITA! ⚡</div><p>Agita el celular rápido</p><div class="shake-bar-container"><div id="shakeFill" class="shake-bar-fill" style="width:0%"></div></div><p id="shakeHint">¡Más rápido! 🔥</p><button class="btn-minigame cancel" id="cancelShake">Cancelar</button></div>`;
-                const fill=document.getElementById('shakeFill'), hint=document.getElementById('shakeHint');
+            return new Promise(resolve => {
+                activeMinigame = isAnimating = true;
+                let power = 0;
+                const TH = 100;
+                let last = { x:0, y:0, z:0 };
+                let lastUpdate = 0;
+                minigameOverlay.style.display = 'flex';
+                minigameOverlay.innerHTML = `<div class="minigame-card"><div class="minigame-title">⚡ ¡AGITA! ⚡</div><p>Agita el celular rápido</p><div class="shake-bar-container"><div id="shakeFill" class="shake-bar-fill" style="width:0%"></div></div><p id="shakeHint">¡Más rápido! 🔥</p><button class="btn-minigame cancel" id="cancelShake">Cancelar</button></div>`;
+                const fill = document.getElementById('shakeFill');
+                const hint = document.getElementById('shakeHint');
+                
                 const motionHandler = (e) => {
-                    const acc = e.accelerationIncludingGravity; if(!acc) return;
-                    const now = performance.now(); if(now - lastUpdate < 30) return; lastUpdate=now;
-                    const delta = Math.abs(acc.x-last.x)+Math.abs(acc.y-last.y)+Math.abs(acc.z-last.z);
-                    if(delta>15){ power=Math.min(power+delta*0.8, TH); fill.style.width=(power/TH*100)+'%'; if(power>=TH){ cleanup(); complete(); } }
-                    last={x:acc.x, y:acc.y, z:acc.z};
+                    const acc = e.accelerationIncludingGravity;
+                    if(!acc) return;
+                    const now = performance.now();
+                    if(now - lastUpdate < 30) return;
+                    lastUpdate = now;
+                    const delta = Math.abs(acc.x - last.x) + Math.abs(acc.y - last.y) + Math.abs(acc.z - last.z);
+                    if(delta > 15){
+                        power = Math.min(power + delta * 0.8, TH);
+                        fill.style.width = (power / TH * 100) + '%';
+                        if(power >= TH){
+                            cleanup();
+                            complete();
+                        }
+                    }
+                    last = { x:acc.x, y:acc.y, z:acc.z };
                 };
-                const complete = ()=>{
-                    minigameOverlay.style.display='none'; unlocked[index]=true; lastDate=getTodayStr(); saveGame();
-                    updateCardFrontElement(index); cardElements[index].classList.add('flipped-permanent');
-                    activeMinigame=isAnimating=false; resolve();
+                
+                const complete = () => {
+                    minigameOverlay.style.display = 'none';
+                    unlocked[index] = true;
+                    lastDate = getTodayStr();
+                    saveGame();
+                    updateCardFrontElement(index);
+                    cardElements[index].classList.add('flipped-permanent');
+                    activeMinigame = isAnimating = false;
+                    resolve();
                 };
-                const cancel = ()=>{ cleanup(); minigameOverlay.style.display='none'; activeMinigame=isAnimating=false; globalMsg.innerText='😢 Intenta de nuevo'; resolve(); };
-                const cleanup = ()=>{ window.removeEventListener('devicemotion', motionHandler); clearTimeout(timer); };
-                const timer = setTimeout(()=>{ if(power<TH) cancel(); },15000);
-                if(typeof DeviceMotionEvent?.requestPermission==='function'){ DeviceMotionEvent.requestPermission().then(p=>{ if(p==='granted') window.addEventListener('devicemotion', motionHandler); else cancel(); }).catch(cancel); }
-                else{ window.addEventListener('devicemotion', motionHandler); }
-                document.getElementById('cancelShake').onclick=cancel; minigameOverlay.onclick=e=>{ if(e.target===minigameOverlay) cancel(); };
+                
+                const cancel = () => {
+                    cleanup();
+                    minigameOverlay.style.display = 'none';
+                    activeMinigame = isAnimating = false;
+                    globalMsg.innerText = '😢 Intenta de nuevo';
+                    resolve();
+                };
+                
+                const cleanup = () => {
+                    window.removeEventListener('devicemotion', motionHandler);
+                    clearTimeout(timer);
+                };
+                
+                const timer = setTimeout(() => { if(power < TH) cancel(); }, 15000);
+                
+                if(typeof DeviceMotionEvent?.requestPermission === 'function'){
+                    DeviceMotionEvent.requestPermission().then(p => {
+                        if(p === 'granted') window.addEventListener('devicemotion', motionHandler);
+                        else cancel();
+                    }).catch(cancel);
+                } else {
+                    window.addEventListener('devicemotion', motionHandler);
+                }
+                
+                document.getElementById('cancelShake').onclick = cancel;
+                minigameOverlay.onclick = e => { if(e.target === minigameOverlay) cancel(); };
             });
         }
 
-        // SCRATCH (raspado eficiente)
         function startScratchGame(index){
-            return new Promise(resolve=>{
-                activeMinigame=isAnimating=true; const data=currentCards[index];
-                minigameOverlay.style.display='flex';
-                minigameOverlay.innerHTML=`<div class="minigame-card" style="max-width:450px"><div class="minigame-title">✨ RASCA ✨</div><p>Talla con el dedo</p><div class="scratch-canvas-container"><canvas id="scratchCanvas" width="400" height="400"></canvas></div><div class="timer-text" id="scratchTimer">15s</div><button class="btn-minigame cancel" id="cancelScratch">Cancelar</button></div>`;
-                const canvas=document.getElementById('scratchCanvas'), ctx=canvas.getContext('2d', { alpha: true });
-                const timerEl=document.getElementById('scratchTimer'); let time=15, revealed=false;
-                const drawBase=()=>{
-                    ctx.clearRect(0,0,400,400); ctx.fillStyle='#FFF0F5'; ctx.fillRect(0,0,400,400);
-                    if(data.t==='img'){
-                        const img=new Image(); img.crossOrigin='anonymous'; img.src=data.v;
-                        img.onload=()=>{ ctx.drawImage(img,0,0,400,400); drawCover(); };
-                        img.onerror=()=>{ ctx.font='bold 22px system-ui'; ctx.fillStyle='#4a0a2a'; ctx.textAlign='center'; ctx.fillText('🌸 Imagen 🌸',200,200); drawCover(); };
-                    }else{ ctx.font='bold 22px system-ui'; ctx.fillStyle='#4a0a2a'; ctx.textAlign='center'; ctx.fillText(data.v,200,200); drawCover(); }
+            return new Promise(resolve => {
+                activeMinigame = isAnimating = true;
+                const data = currentCards[index];
+                minigameOverlay.style.display = 'flex';
+                minigameOverlay.innerHTML = `<div class="minigame-card" style="max-width:450px"><div class="minigame-title">✨ RASCA ✨</div><p>Talla con el dedo</p><div class="scratch-canvas-container"><canvas id="scratchCanvas" width="400" height="400"></canvas></div><div class="timer-text" id="scratchTimer">15s</div><button class="btn-minigame cancel" id="cancelScratch">Cancelar</button></div>`;
+                const canvas = document.getElementById('scratchCanvas');
+                const ctx = canvas.getContext('2d', { alpha: true });
+                const timerEl = document.getElementById('scratchTimer');
+                let time = 15, revealed = false;
+                
+                const drawBase = () => {
+                    ctx.clearRect(0, 0, 400, 400);
+                    ctx.fillStyle = '#FFF0F5';
+                    ctx.fillRect(0, 0, 400, 400);
+                    if(data.t === 'img'){
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.src = data.v;
+                        img.onload = () => {
+                            ctx.drawImage(img, 0, 0, 400, 400);
+                            drawCover();
+                        };
+                        img.onerror = () => {
+                            ctx.font = 'bold 22px system-ui';
+                            ctx.fillStyle = '#4a0a2a';
+                            ctx.textAlign = 'center';
+                            ctx.fillText('🌸 Imagen 🌸', 200, 200);
+                            drawCover();
+                        };
+                    } else {
+                        ctx.font = 'bold 22px system-ui';
+                        ctx.fillStyle = '#4a0a2a';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(data.v, 200, 200);
+                        drawCover();
+                    }
                 };
-                const drawCover=()=>{ ctx.fillStyle='#4a2e4a'; ctx.fillRect(0,0,400,400); ctx.fillStyle='#FFD700'; ctx.font='bold 20px system-ui'; ctx.fillText('✨ RASCA ✨',200,200); };
-                const scratch=(x,y)=>{ ctx.save(); ctx.globalCompositeOperation='destination-out'; ctx.beginPath(); ctx.arc(x,y,28,0,Math.PI*2); ctx.fill(); ctx.restore(); checkReveal(); };
-                const checkReveal=()=>{ if(revealed) return; const imgData=ctx.getImageData(0,0,400,400); let cnt=0; for(let i=0;i<imgData.data.length;i+=4) if(imgData.data[i+3]<200) cnt++; if(cnt>60000){ revealed=true; finish(true); } };
-                const finish=(success)=>{
-                    clearInterval(timerInt); canvas.removeEventListener('touchmove', touchMove); canvas.removeEventListener('touchstart', touchStart);
-                    canvas.removeEventListener('mousemove', mouseMove); canvas.removeEventListener('mousedown', mouseDown);
-                    if(success){ unlocked[index]=true; lastDate=getTodayStr(); saveGame(); updateCardFrontElement(index); cardElements[index].classList.add('flipped-permanent'); }
-                    minigameOverlay.style.display='none'; activeMinigame=isAnimating=false; resolve();
+                
+                const drawCover = () => {
+                    ctx.fillStyle = '#4a2e4a';
+                    ctx.fillRect(0, 0, 400, 400);
+                    ctx.fillStyle = '#FFD700';
+                    ctx.font = 'bold 20px system-ui';
+                    ctx.fillText('✨ RASCA ✨', 200, 200);
                 };
-                const getCoords=e=>{ const r=canvas.getBoundingClientRect(); const s=400/r.width; let cx,cy; if(e.touches){ cx=e.touches[0].clientX; cy=e.touches[0].clientY; } else { cx=e.clientX; cy=e.clientY; } return { x:Math.min(400,Math.max(0,(cx-r.left)*s)), y:Math.min(400,Math.max(0,(cy-r.top)*s)) }; };
-                const touchStart=e=>{ e.preventDefault(); const {x,y}=getCoords(e); scratch(x,y); };
-                const touchMove=e=>{ e.preventDefault(); const {x,y}=getCoords(e); scratch(x,y); };
-                const mouseDown=e=>{ e.preventDefault(); const {x,y}=getCoords(e); scratch(x,y); };
-                const mouseMove=e=>{ if(e.buttons!==1) return; e.preventDefault(); const {x,y}=getCoords(e); scratch(x,y); };
+                
+                const scratch = (x, y) => {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 28, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                    checkReveal();
+                };
+                
+                const checkReveal = () => {
+                    if(revealed) return;
+                    const imgData = ctx.getImageData(0, 0, 400, 400);
+                    let cnt = 0;
+                    for(let i = 0; i < imgData.data.length; i += 4) if(imgData.data[i+3] < 200) cnt++;
+                    if(cnt > 60000){
+                        revealed = true;
+                        finish(true);
+                    }
+                };
+                
+                const finish = (success) => {
+                    clearInterval(timerInt);
+                    canvas.removeEventListener('touchmove', touchMove);
+                    canvas.removeEventListener('touchstart', touchStart);
+                    canvas.removeEventListener('mousemove', mouseMove);
+                    canvas.removeEventListener('mousedown', mouseDown);
+                    if(success){
+                        unlocked[index] = true;
+                        lastDate = getTodayStr();
+                        saveGame();
+                        updateCardFrontElement(index);
+                        cardElements[index].classList.add('flipped-permanent');
+                    }
+                    minigameOverlay.style.display = 'none';
+                    activeMinigame = isAnimating = false;
+                    resolve();
+                };
+                
+                const getCoords = e => {
+                    const r = canvas.getBoundingClientRect();
+                    const s = 400 / r.width;
+                    let cx, cy;
+                    if(e.touches){
+                        cx = e.touches[0].clientX;
+                        cy = e.touches[0].clientY;
+                    } else {
+                        cx = e.clientX;
+                        cy = e.clientY;
+                    }
+                    return {
+                        x: Math.min(400, Math.max(0, (cx - r.left) * s)),
+                        y: Math.min(400, Math.max(0, (cy - r.top) * s))
+                    };
+                };
+                
+                const touchStart = e => { e.preventDefault(); const {x,y} = getCoords(e); scratch(x,y); };
+                const touchMove = e => { e.preventDefault(); const {x,y} = getCoords(e); scratch(x,y); };
+                const mouseDown = e => { e.preventDefault(); const {x,y} = getCoords(e); scratch(x,y); };
+                const mouseMove = e => { if(e.buttons !== 1) return; e.preventDefault(); const {x,y} = getCoords(e); scratch(x,y); };
+                
                 drawBase();
-                canvas.addEventListener('touchstart', touchStart, {passive:false}); canvas.addEventListener('touchmove', touchMove, {passive:false});
-                canvas.addEventListener('mousedown', mouseDown); canvas.addEventListener('mousemove', mouseMove);
-                const timerInt = setInterval(()=>{ time--; timerEl.textContent=time+'s'; if(time<=0) finish(false); },1000);
-                document.getElementById('cancelScratch').onclick=()=>finish(false);
-                minigameOverlay.onclick=e=>{ if(e.target===minigameOverlay) finish(false); };
+                canvas.addEventListener('touchstart', touchStart, { passive: false });
+                canvas.addEventListener('touchmove', touchMove, { passive: false });
+                canvas.addEventListener('mousedown', mouseDown);
+                canvas.addEventListener('mousemove', mouseMove);
+                
+                const timerInt = setInterval(() => {
+                    time--;
+                    timerEl.textContent = time + 's';
+                    if(time <= 0) finish(false);
+                }, 1000);
+                
+                document.getElementById('cancelScratch').onclick = () => finish(false);
+                minigameOverlay.onclick = e => { if(e.target === minigameOverlay) finish(false); };
             });
         }
 
         function showModal(idx){
-            const data=currentCards[idx]; modalContent.innerHTML='';
-            if(data.t==='img'){ const img=document.createElement('img'); img.className='modal-img'; img.src=data.v; modalContent.appendChild(img); }
-            else{ const d=document.createElement('div'); d.className='modal-text'; d.innerText=data.v; modalContent.appendChild(d); }
-            modal.style.display='flex'; sounds.play([880]);
+            const data = currentCards[idx];
+            modalContent.innerHTML = '';
+            if(data.t === 'img'){
+                const img = document.createElement('img');
+                img.className = 'modal-img';
+                img.src = data.v;
+                modalContent.appendChild(img);
+            } else {
+                const d = document.createElement('div');
+                d.className = 'modal-text';
+                d.innerText = data.v;
+                modalContent.appendChild(d);
+            }
+            modal.style.display = 'flex';
+            sounds.play([880]);
         }
-        function closeModal(){ modal.style.display='none'; }
+        
+        function closeModal(){ modal.style.display = 'none'; }
 
         function resetGame(){
-            if(isAnimating) return; const built=buildDeck(); currentCards=built.deck; specialMechanics=built.specialMechanics;
-            unlocked=new Array(CONFIG.TOTAL_CARTAS).fill(false); lastDate=null; saveGame(); rebuildUI();
-            globalMsg.innerText="✨ Juego reiniciado. ¡Descubre las cartas secretas! ✨";
+            if(isAnimating) return;
+            const built = buildDeck();
+            currentCards = built.deck;
+            specialMechanics = built.specialMechanics;
+            unlocked = new Array(CONFIG.TOTAL_CARTAS).fill(false);
+            lastDate = null;
+            saveGame();
+            rebuildUI();
+            globalMsg.innerText = "✨ Juego reiniciado. ¡Descubre las cartas secretas! ✨";
         }
 
         async function tutorial(){
-            gameReady=false; const msg=t=>new Promise(r=>{ const o=document.createElement('div'); o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center';
-                const b=document.createElement('div'); b.style.cssText='background:#2d1b36;padding:2rem;border-radius:2rem;border:3px solid #FFD700;max-width:320px;text-align:center';
-                b.innerHTML=`<p style="color:#FFE4F0;margin-bottom:1rem">💖 ${t}</p><button style="background:#FF69B4;border:none;padding:0.6rem 1.5rem;border-radius:2rem;">Siguiente</button>`; o.appendChild(b); document.body.appendChild(o);
-                b.querySelector('button').onclick=()=>{ o.remove(); r(); }; });
+            gameReady = false;
+            const msg = t => new Promise(r => {
+                const o = document.createElement('div');
+                o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center';
+                const b = document.createElement('div');
+                b.style.cssText = 'background:#2d1b36;padding:2rem;border-radius:2rem;border:3px solid #FFD700;max-width:320px;text-align:center';
+                b.innerHTML = `<p style="color:#FFE4F0;margin-bottom:1rem">💖 ${t}</p><button style="background:#FF69B4;border:none;padding:0.6rem 1.5rem;border-radius:2rem;">Siguiente</button>`;
+                o.appendChild(b);
+                document.body.appendChild(o);
+                b.querySelector('button').onclick = () => { o.remove(); r(); };
+            });
             await msg(`¡Hola mi amor! 💕 Algunas cartas esconden retos secretos: agitar el celular o rascar la pantalla.`);
             await msg(`No sabrás cuáles son hasta que las toques. ¡Cada día puedes abrir una carta!`);
             await msg(`¿Lista para la emoción? ¡Toca una carta y descubre la magia! ✨`);
-            gameReady=true; localStorage.setItem('tutorial_opt','1'); globalMsg.innerText="💎 ¡Toca una carta y vive la sorpresa! 💎";
+            gameReady = true;
+            localStorage.setItem('tutorial_opt', '1');
+            globalMsg.innerText = "💎 ¡Toca una carta y vive la sorpresa! 💎";
         }
 
         function init(){
-            loadGame(); rebuildUI();
-            if(!localStorage.getItem('tutorial_opt')) tutorial(); else gameReady=true;
-            resetBtn.onclick = () => { if(confirm('¿Reiniciar todo?')) resetGame(); };
-            modal.onclick=e=>{ if(e.target===modal) closeModal(); }; closeModalBtn.onclick=closeModal;
-            document.body.addEventListener('touchstart', ()=>sounds.init(), {once:true});
+            loadGame();
+            rebuildUI();
+            if(!localStorage.getItem('tutorial_opt')) tutorial();
+            else gameReady = true;
+            
+            if(resetBtn) resetBtn.onclick = () => { if(confirm('¿Reiniciar todo?')) resetGame(); };
+            modal.onclick = e => { if(e.target === modal) closeModal(); };
+            closeModalBtn.onclick = closeModal;
+            document.body.addEventListener('touchstart', () => sounds.init(), { once: true });
         }
+        
         init();
     })();
 </script>
